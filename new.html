@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snake Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        .body {
+            background: url(/image/Backg.png);
+            min-height: 100vh;
+            background-size: 100vw 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #board {
+            background: linear-gradient(rgb(91, 208, 255), rgb(138, 87, 248));
+            width: 90vmin;
+            height: 92vmin;
+            border: 4px solid rgb(69, 69, 69);
+            border-radius: 10px;
+            display: grid;
+            grid-template-rows: repeat(18, 1fr);
+            grid-template-columns: repeat(18, 1fr);
+            opacity: 0.8;
+        }
+
+        .head {
+            background-color: red;
+        }
+
+        .snake {
+            background-color: rgb(0, 255, 229);
+        }
+
+        .food {
+            background-color: rgb(21, 255, 0);
+        }
+    </style>
+</head>
+<body>
+    <div class="body">
+        <div id="board"></div>
+    </div>
+
+    <script>
+        // Game constants
+        let inputDir = { x: 0, y: 0 };
+        let foodSound = new Audio("food.mp3");
+        let gameOverSound = new Audio("gameover.mp3");
+        let moveSound = new Audio("move.mp3");
+        let musicSound = new Audio("music.mp3");
+        let speed = 2;
+        let score = 0;
+        let lastPaintTime = 0;
+        let snakeArr = [{ x: 13, y: 15 }];
+        let food = { x: 6, y: 7 };
+
+        // Game Function
+        function main(ctime) {
+            window.requestAnimationFrame(main);
+            if ((ctime - lastPaintTime) / 1000 < 1 / speed) {
+                return;
+            }
+            lastPaintTime = ctime;
+            gameEngine();
+        }
+
+        function isCollide(sarr) {
+            return false;
+        }
+
+        function gameEngine() {
+            // Part 1: Updating snake array
+            if (isCollide(snakeArr)) {
+                gameOverSound.play();
+                musicSound.pause();
+                inputDir = { x: 0, y: 0 };
+                alert("Game over. Press any key to play again!");
+                snakeArr = [{ x: 13, y: 15 }];
+                musicSound.play();
+                score = 0;
+            }
+
+            // If the snake has eaten the food, increment score and regenerate the food
+            if (snakeArr[0].y === food.y && snakeArr[0].x === food.x) {
+                foodSound.play();
+                score += 1;
+                snakeArr.unshift({
+                    x: snakeArr[0].x + inputDir.x,
+                    y: snakeArr[0].y + inputDir.y
+                });
+                let a = 2;
+                let b = 16;
+                food = {
+                    x: Math.round(a + (b - a) * Math.random()),
+                    y: Math.round(a + (b - a) * Math.random())
+                };
+            }
+
+            // Moving the snake
+            for (let i = snakeArr.length - 2; i >= 0; i--) {
+                snakeArr[i + 1] = { ...snakeArr[i] };
+            }
+
+            snakeArr[0].x += inputDir.x;
+            snakeArr[0].y += inputDir.y;
+
+            // Part 2: Display/render the snake
+            let board = document.getElementById('board');
+            board.innerHTML = "";
+            snakeArr.forEach((e, index) => {
+                let snakeElement = document.createElement("div");
+                snakeElement.style.gridRowStart = e.y;
+                snakeElement.style.gridColumnStart = e.x;
+                if (index === 0) {
+                    snakeElement.classList.add("head");
+                } else {
+                    snakeElement.classList.add("snake");
+                }
+                board.appendChild(snakeElement);
+            });
+
+            // Displaying the food
+            let foodElement = document.createElement("div");
+            foodElement.style.gridRowStart = food.y;
+            foodElement.style.gridColumnStart = food.x;
+            foodElement.classList.add("food");
+            board.appendChild(foodElement);
+        }
+
+        // Main logic
+        window.requestAnimationFrame(main);
+        window.addEventListener("keydown", (e) => {
+            moveSound.play();
+            switch (e.key) {
+                case "ArrowUp":
+                    if (inputDir.y !== 1) {
+                        inputDir = { x: 0, y: -1 };
+                    }
+                    break;
+
+                case "ArrowDown":
+                    if (inputDir.y !== -1) {
+                        inputDir = { x: 0, y: 1 };
+                    }
+                    break;
+
+                case "ArrowLeft":
+                    if (inputDir.x !== 1) {
+                        inputDir = { x: -1, y: 0 };
+                    }
+                    break;
+
+                case "ArrowRight":
+                    if (inputDir.x !== -1) {
+                        inputDir = { x: 1, y: 0 };
+                    }
+                    break;
+
+                default:
+                    break;
+            }
+        });
+    </script>
+</body>
+</html>
